@@ -280,7 +280,7 @@ Options:\n\
                           skein2       Double Skein (Woodcoin)\n\
                           s3           S3\n\
                           hive          HIVE\n\
-						  argon2		argon2\n\
+			  argon2		argon2\n\
                           x13          X13\n\
                           x14          X14\n\
                           x15          X15\n\
@@ -1861,10 +1861,12 @@ static void *miner_thread(void *userdata)
 			case ALGO_DMD_GR:
 			case ALGO_FRESH:
 			case ALGO_GROESTL:
-			case ALGO_MYR_GR:
-			case ALGO_ARGON2:
+			case ALGO_MYR_GR:			
 			case ALGO_HIVE:
 				max64 = 0x3ffff;
+				break;
+			case ALGO_ARGON2:
+				max64 = 0xf;
 				break;
 			case ALGO_X13:
 				max64 = 0x3ffff;
