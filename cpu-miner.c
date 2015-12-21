@@ -1567,6 +1567,7 @@ static void stratum_gen_work(struct stratum_ctx *sctx, struct work *work)
 			case ALGO_SCRYPT:
 			case ALGO_NEOSCRYPT:
 			case ALGO_PLUCK:
+			case ALGO_ARGON2:
 				diff_to_target(work->target, sctx->job.diff / (65536.0 * opt_diff_factor));
 				break;
 			case ALGO_FRESH:
