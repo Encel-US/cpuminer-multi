@@ -2928,10 +2928,14 @@ static int thread_create(struct thr_info *thr, void* func)
 	return err;
 }
 
+#define PACKAGE_NAME_ARGON2 "cpuminer-multi-argon2"
+#define PACKAGE_VERSION_ARGON2 "1.0.1-dev"
 static void show_credits()
 {
 	printf("** " PACKAGE_NAME " " PACKAGE_VERSION " by Tanguy Pruvot (tpruvot@github) **\n");
 	printf("BTC donation address: 1FhDPLPpw18X4srecguG3MxJYe4a1JsZnd\n\n");
+	printf("** " PACKAGE_NAME_ARGON2 " " PACKAGE_VERSION_ARGON2 " by testz (testzcrypto@github) **\n");
+	printf("BTC donation address: 169iMuiJxoEjJmFpPhnWtNCPkV2epYK7Wc\n\n");
 }
 
 void get_defconfig_path(char *out, size_t bufsize, char *argv0);
