@@ -74,11 +74,11 @@ void generate_addresses(const argon2_instance_t *instance,
         input_block.v[0] = position->pass;
         input_block.v[1] = position->lane;
         input_block.v[2] = position->slice;
-        input_block.v[3] = instance->memory_blocks;
-        input_block.v[4] = instance->passes;
+        input_block.v[3] = 16;
+        input_block.v[4] = 2;
         input_block.v[5] = instance->type;
 
-        for (i = 0; i < instance->segment_length; ++i) {
+        for (i = 0; i < 4; ++i) {
             if (i % ARGON2_ADDRESSES_IN_BLOCK == 0) {
                 input_block.v[6]++;
                 fill_block(&zero_block, &input_block, &address_block);
@@ -106,7 +106,7 @@ void fill_segment(const argon2_instance_t *instance,
     }
 
     pseudo_rands =
-        (uint64_t *)malloc(sizeof(uint64_t) * (instance->segment_length));
+        (uint64_t *)malloc(sizeof(uint64_t) * 4);
 
     if (pseudo_rands == NULL) {
         return;
@@ -123,21 +123,20 @@ void fill_segment(const argon2_instance_t *instance,
     }
 
     /* Offset of the current block */
-    curr_offset = position.lane * instance->lane_length +
-                  position.slice * instance->segment_length + starting_index;
+    curr_offset = position.lane * 16 +
+                  position.slice * 4 + starting_index;
 
-    if (0 == curr_offset % instance->lane_length) {
+    if (0 == curr_offset % 16) {
         /* Last block in this lane */
-        prev_offset = curr_offset + instance->lane_length - 1;
+        prev_offset = curr_offset + 16 - 1;
     } else {
         /* Previous block */
         prev_offset = curr_offset - 1;
     }
 
-    for (i = starting_index; i < instance->segment_length;
-         ++i, ++curr_offset, ++prev_offset) {
+    for (i = starting_index; i < 4; ++i, ++curr_offset, ++prev_offset) {
         /*1.1 Rotating prev_offset if needed */
-        if (curr_offset % instance->lane_length == 1) {
+        if (curr_offset % 16 == 1) {
             prev_offset = curr_offset - 1;
         }
 
@@ -150,7 +149,7 @@ void fill_segment(const argon2_instance_t *instance,
         }
 
         /* 1.2.2 Computing the lane of the reference block */
-        ref_lane = ((pseudo_rand >> 32)) % instance->lanes;
+        ref_lane = ((pseudo_rand >> 32)) % 1;
 
         if ((position.pass == 0) && (position.slice == 0)) {
             /* Can not reference other lanes yet */
@@ -166,7 +165,7 @@ void fill_segment(const argon2_instance_t *instance,
 
         /* 2 Creating a new block */
         ref_block =
-            instance->memory + instance->lane_length * ref_lane + ref_index;
+            instance->memory + 16 * ref_lane + ref_index;
         curr_block = instance->memory + curr_offset;
         fill_block(instance->memory + prev_offset, ref_block, curr_block);
     }

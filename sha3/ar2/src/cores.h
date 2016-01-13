@@ -76,12 +76,12 @@ void xor_block(block *dst, const block *src);
  */
 typedef struct Argon2_instance_t {
     block *memory;          /* Memory pointer */
-    uint32_t passes;        /* Number of passes */
-    uint32_t memory_blocks; /* Number of blocks in memory */
+    /*uint32_t passes;        /* Number of passes 
+    uint32_t memory_blocks; /* Number of blocks in memory 
     uint32_t segment_length;
     uint32_t lane_length;
     uint32_t lanes;
-    uint32_t threads;
+    uint32_t threads;*/
     argon2_type type;
     int print_internals; /* whether to print the memory blocks */
 } argon2_instance_t;

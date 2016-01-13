@@ -158,34 +158,28 @@ typedef void (*deallocate_fptr)(uint8_t *memory, size_t bytes_to_allocate);
  lanes.
  You want to erase the password, but you're OK with last pass not being erased.
  You want to use the default memory allocator.
- Then you initialize
- Argon2_Context(out,8,pwd,32,salt,16,NULL,0,NULL,0,5,1<<20,4,4,NULL,NULL,true,false,false,false).
  */
 typedef struct Argon2_Context {
     uint8_t *out;    /* output array */
-    uint32_t outlen; /* digest length */
-
     uint8_t *pwd;    /* password array */
-    uint32_t pwdlen; /* password length */
-
     uint8_t *salt;    /* salt array */
-    uint32_t saltlen; /* salt length */
-
-    uint8_t *secret;    /* key array */
-    uint32_t secretlen; /* key length */
-
-    uint8_t *ad;    /* associated data array */
-    uint32_t adlen; /* associated data length */
-
-    uint32_t t_cost;  /* number of passes */
-    uint32_t m_cost;  /* amount of memory requested (KB) */
-    uint32_t lanes;   /* number of lanes */
-    uint32_t threads; /* maximum number of threads */
+    /*uint8_t *secret;*/    /* key array */
+    /*uint8_t *ad;*/   /* associated data array */
 
     allocate_fptr allocate_cbk; /* pointer to memory allocator */
     deallocate_fptr free_cbk;   /* pointer to memory deallocator */
 
-    uint32_t flags; /* array of bool options */
+    /*uint32_t outlen;*/ /* digest length */
+    uint32_t pwdlen;  /* password length */
+    /*uint32_t saltlen;*/ /* salt length */
+    /*uint32_t secretlen;*/ /* key length */
+    /*uint32_t adlen;*/ /* associated data length */
+    /*uint32_t t_cost;*/  /* number of passes */
+    /*uint32_t m_cost;*/  /* amount of memory requested (KB) */
+    /*uint32_t lanes;*/   /* number of lanes */
+    /*uint32_t threads;*/ /* maximum number of threads */
+    /*uint32_t flags;*/ /* array of bool options */
+
 } argon2_context;
 
 /**
@@ -201,14 +195,14 @@ typedef struct Argon2_Context {
  * @pre    @a saltlen must be at least @saltlen bytes long
  * @return Zero if successful, 1 otherwise.
  */
-int hash_argon2i(void *out, size_t outlen, const void *in, size_t inlen,
+/*int hash_argon2i(void *out, size_t outlen, const void *in, size_t inlen,
                  const void *salt, size_t saltlen, unsigned int t_cost,
-                 unsigned int m_cost);
+                 unsigned int m_cost);*/
 
 /* same for argon2d */
-int hash_argon2d(void *out, size_t outlen, const void *in, size_t inlen,
+/*int hash_argon2d(void *out, size_t outlen, const void *in, size_t inlen,
                  const void *salt, size_t saltlen, unsigned int t_cost,
-                 unsigned int m_cost);
+                 unsigned int m_cost);*/
 
 /*
  * **************Argon2d: Version of Argon2 that picks memory blocks depending

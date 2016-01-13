@@ -24,7 +24,7 @@ SCRYPT_CHUNKMIX_FN(scrypt_mix_word_t *Bout/*[chunkWords]*/, scrypt_mix_word_t *B
 #else
 	scrypt_mix_word_t ALIGN(16) X[SCRYPT_BLOCK_WORDS], *block;
 #endif
-	uint32_t i, j, blocksPerChunk = r * 2, half = 0;
+	uint32_t i, j, blocksPerChunk = /*r * 2*/2, half = 0;
 
 	/* 1: X = B_{2r - 1} */
 	block = scrypt_block(Bin, blocksPerChunk - 1);
@@ -38,7 +38,7 @@ SCRYPT_CHUNKMIX_FN(scrypt_mix_word_t *Bout/*[chunkWords]*/, scrypt_mix_word_t *B
 	}
 
 	/* 2: for i = 0 to 2r - 1 do */
-	for (i = 0; i < blocksPerChunk; i++, half ^= r) {
+	for (i = 0; i < blocksPerChunk; i++, half ^= /*r*/1) {
 		/* 3: X = H(X ^ B_i) */
 		block = scrypt_block(Bin, i);
 		for (j = 0; j < SCRYPT_BLOCK_WORDS; j++)
@@ -73,42 +73,42 @@ SCRYPT_CHUNKMIX_FN(scrypt_mix_word_t *Bout/*[chunkWords]*/, scrypt_mix_word_t *B
 
 static void NOINLINE FASTCALL
 SCRYPT_ROMIX_FN(scrypt_mix_word_t *X/*[chunkWords]*/, scrypt_mix_word_t *Y/*[chunkWords]*/, scrypt_mix_word_t *V/*[N * chunkWords]*/, uint32_t N, uint32_t r) {
-	uint32_t i, j, chunkWords = (uint32_t)(SCRYPT_BLOCK_WORDS * r * 2);
+	uint32_t i, j, chunkWords = (uint32_t)(SCRYPT_BLOCK_WORDS * 2);
 	scrypt_mix_word_t *block = V;
 
-	SCRYPT_ROMIX_TANGLE_FN(X, r * 2);
+	SCRYPT_ROMIX_TANGLE_FN(X, 2);
 
 	/* 1: X = B */
 	/* implicit */
 
 	/* 2: for i = 0 to N - 1 do */
 	memcpy(block, X, chunkWords * sizeof(scrypt_mix_word_t));
-	for (i = 0; i < N - 1; i++, block += chunkWords) {
+	for (i = 0; i < /*N - 1*/511; i++, block += chunkWords) {
 		/* 3: V_i = X */
 		/* 4: X = H(X) */
-		SCRYPT_CHUNKMIX_FN(block + chunkWords, block, NULL, r);
+		SCRYPT_CHUNKMIX_FN(block + chunkWords, block, NULL, /*r*/1);
 	}
-	SCRYPT_CHUNKMIX_FN(X, block, NULL, r);
+	SCRYPT_CHUNKMIX_FN(X, block, NULL, 1);
 
 	/* 6: for i = 0 to N - 1 do */
-	for (i = 0; i < N; i += 2) {
+	for (i = 0; i < /*N*/512; i += 2) {
 		/* 7: j = Integerify(X) % N */
-		j = X[chunkWords - SCRYPT_BLOCK_WORDS] & (N - 1);
+		j = X[chunkWords - SCRYPT_BLOCK_WORDS] & /*(N - 1)*/511;
 
 		/* 8: X = H(Y ^ V_j) */
-		SCRYPT_CHUNKMIX_FN(Y, X, scrypt_item(V, j, chunkWords), r);
+		SCRYPT_CHUNKMIX_FN(Y, X, scrypt_item(V, j, chunkWords), 1);
 
 		/* 7: j = Integerify(Y) % N */
-		j = Y[chunkWords - SCRYPT_BLOCK_WORDS] & (N - 1);
+		j = Y[chunkWords - SCRYPT_BLOCK_WORDS] & /*(N - 1)*/511;
 
 		/* 8: X = H(Y ^ V_j) */
-		SCRYPT_CHUNKMIX_FN(X, Y, scrypt_item(V, j, chunkWords), r);
+		SCRYPT_CHUNKMIX_FN(X, Y, scrypt_item(V, j, chunkWords), 1);
 	}
 
 	/* 10: B' = X */
 	/* implicit */
 
-	SCRYPT_ROMIX_UNTANGLE_FN(X, r * 2);
+	SCRYPT_ROMIX_UNTANGLE_FN(X, 2);
 }
 
 #endif /* !defined(SCRYPT_CHOOSE_COMPILETIME) || !defined(SCRYPT_HAVE_ROMIX) */

@@ -186,6 +186,59 @@ scrypt(const uint8_t *password, size_t password_len, const uint8_t *salt, size_t
 	scrypt_free(&V);
 	scrypt_free(&YX);
 }
+
+#define Nfactor 8
+#define rfactor 0
+#define pfactor 0
+#if (SCRYPT_BLOCK_BYTES == 64)
+#define chunk_bytes 128 
+#elif (SCRYPT_BLOCK_BYTES == 128)
+#define chunk_bytes 256 
+#elif (SCRYPT_BLOCK_BYTES == 256)
+#define chunk_bytes 512 
+#elif (SCRYPT_BLOCK_BYTES == 512)
+#define chunk_bytes 1024
+#endif
+
+void
+my_scrypt(const uint8_t *password, size_t password_len, const uint8_t *salt, size_t salt_len, uint8_t *out) {
+	scrypt_aligned_alloc YX, V;
+	uint8_t *X, *Y;
+
+#if !defined(SCRYPT_CHOOSE_COMPILETIME)
+	scrypt_ROMixfn scrypt_ROMix = scrypt_getROMix();
+#endif
+
+/*
+#if !defined(SCRYPT_TEST)
+	static int power_on_self_test = 0;
+	if (!power_on_self_test) {
+		power_on_self_test = 1;
+		if (!scrypt_power_on_self_test())
+			scrypt_fatal_error("scrypt: power on self test failed");
+	}
+#endif
+*/
+	V = scrypt_alloc((uint64_t)512 * chunk_bytes);
+	YX = scrypt_alloc(2 * chunk_bytes);
+
+	/* 1: X = PBKDF2(password, salt) */
+	Y = YX.ptr;
+	X = Y + chunk_bytes;
+	scrypt_pbkdf2(password, password_len, salt, salt_len, 1, X, chunk_bytes);
+
+	/* 2: X = ROMix(X) */
+	scrypt_ROMix((scrypt_mix_word_t *)X, (scrypt_mix_word_t *)Y, (scrypt_mix_word_t *)V.ptr, 512, 1);
+
+	/* 3: Out = PBKDF2(password, X) */
+	scrypt_pbkdf2(password, password_len, X, chunk_bytes, 1, out, 32);
+
+	scrypt_ensure_zero(YX.ptr, 2 * chunk_bytes);
+
+	scrypt_free(&V);
+	scrypt_free(&YX);
+}
+
 #if defined( _WINDOWS )
 #if !defined( QT_GUI )
  }

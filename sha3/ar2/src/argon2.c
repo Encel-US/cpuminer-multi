@@ -99,15 +99,15 @@ static const char *Argon2_ErrorMessage[] = {
 {ARGON2_MISSING_ARGS, */ "Missing arguments", /*},*/
 };
 
-int hash_argon2i(void *out, size_t outlen, const void *in, size_t inlen,
+/*int hash_argon2i(void *out, size_t outlen, const void *in, size_t inlen,
                  const void *salt, size_t saltlen, unsigned int t_cost,
                  unsigned int m_cost) {
 
-    argon2_context context;
+    argon2_context context;*/
 
     /* Detect and reject overflowing sizes */
     /* TODO: This should probably be fixed in the function signature */
-    if (inlen > UINT32_MAX) {
+    /*if (inlen > UINT32_MAX) {
         return ARGON2_PWD_TOO_LONG;
     }
 
@@ -138,16 +138,16 @@ int hash_argon2i(void *out, size_t outlen, const void *in, size_t inlen,
     context.flags = ARGON2_DEFAULT_FLAGS;
 
     return argon2_core(&context, Argon2_i);
-}
+}*/
 
-int hash_argon2d(void *out, size_t outlen, const void *in, size_t inlen,
+/*int hash_argon2d(void *out, size_t outlen, const void *in, size_t inlen,
                  const void *salt, size_t saltlen, unsigned int t_cost,
                  unsigned int m_cost) {
-    argon2_context context;
+    argon2_context context;*/
 
     /* Detect and reject overflowing sizes */
     /* TODO: This should probably be fixed in the function signature */
-    if (inlen > UINT32_MAX) {
+    /*if (inlen > UINT32_MAX) {
         return ARGON2_PWD_TOO_LONG;
     }
 
@@ -178,7 +178,7 @@ int hash_argon2d(void *out, size_t outlen, const void *in, size_t inlen,
     context.flags = ARGON2_DEFAULT_FLAGS;
 
     return argon2_core(&context, Argon2_d);
-}
+}*/
 
 int argon2d(argon2_context *context) { return argon2_core(context, Argon2_d); }
 
@@ -186,9 +186,9 @@ int argon2i(argon2_context *context) { return argon2_core(context, Argon2_i); }
 
 int verify_d(argon2_context *context, const char *hash) {
     int result;
-    if (0 == context->outlen || NULL == hash) {
+    /*if (0 == context->outlen || NULL == hash) {
         return ARGON2_OUT_PTR_MISMATCH;
-    }
+    }*/
 
     result = argon2_core(context, Argon2_d);
 
@@ -196,7 +196,7 @@ int verify_d(argon2_context *context, const char *hash) {
         return result;
     }
 
-    return 0 == memcmp(hash, context->out, context->outlen);
+    return 0 == memcmp(hash, context->out, 32);
 }
 
 const char *error_message(int error_code) {
@@ -244,27 +244,27 @@ static int b64_byte_to_char(unsigned x) {
  * in the buffer, and the output length (counted WITHOUT the terminating
  * zero) is returned.
  */
-static size_t to_base64(char *dst, size_t dst_len, const void *src,
-                        size_t src_len) {
+static size_t to_base64(char *dst, size_t dst_len, const void *src) {
     size_t olen;
     const unsigned char *buf;
     unsigned acc, acc_len;
 
-    olen = (src_len / 3) << 2;
-    switch (src_len % 3) {
+    olen = 43;
+    /*switch (32 % 3) {
     case 2:
-        olen++;
+        olen++;*/
     /* fall through */
-    case 1:
+    /*case 1:
         olen += 2;
         break;
-    }
+    }*/
     if (dst_len <= olen) {
         return (size_t)-1;
     }
     acc = 0;
     acc_len = 0;
     buf = (const unsigned char *)src;
+    size_t src_len = 32;
     while (src_len-- > 0) {
         acc = (acc << 8) + (*buf++);
         acc_len += 8;
@@ -319,9 +319,9 @@ int encode_string(char *dst, size_t dst_len, argon2_context *ctx) {
         SS(tmp);                                                               \
     } while (0);
 
-#define SB(buf, len)                                                           \
+#define SB(buf)                                                                \
     do {                                                                       \
-        size_t sb_len = to_base64(dst, dst_len, buf, len);                     \
+        size_t sb_len = to_base64(dst, dst_len, buf);                          \
         if (sb_len == (size_t)-1) {                                            \
             return 0;                                                          \
         }                                                                      \
@@ -330,28 +330,28 @@ int encode_string(char *dst, size_t dst_len, argon2_context *ctx) {
     } while (0);
 
     SS("$argon2i$m=");
-    SX(ctx->m_cost);
+    SX(16);
     SS(",t=");
-    SX(ctx->t_cost);
+    SX(2);
     SS(",p=");
-    SX(ctx->lanes);
+    SX(1);
 
-    if (ctx->adlen > 0) {
+    /*if (ctx->adlen > 0) {
         SS(",data=");
         SB(ctx->ad, ctx->adlen);
-    }
+    }*/
 
-    if (ctx->saltlen == 0)
-        return 1;
-
-    SS("$");
-    SB(ctx->salt, ctx->saltlen);
-
-    if (ctx->outlen == 0)
-        return 1;
+    /*if (ctx->saltlen == 0)
+        return 1;*/
 
     SS("$");
-    SB(ctx->out, ctx->outlen);
+    SB(ctx->salt);
+
+    /*if (ctx->outlen32 == 0)
+        return 1;*/
+
+    SS("$");
+    SB(ctx->out);
     return 1;
 
 #undef SS
